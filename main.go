@@ -13,13 +13,15 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func main() {
+func init() {
 	initConfig()
 	logs.InitLog()
-	db := initMongo()
+}
+
+func main() {
+	db := infrastructure.InitMongo()
 	// Initialize repositories, use cases, and handlers
 	userRepo := repositories.NewUserRepositoryDB(db)
 	userService := services.NewUserService(userRepo)
@@ -29,8 +31,16 @@ func main() {
 	app := fiber.New()
 
 	// Define routes
-	app.Get("/user", func(c *fiber.Ctx) error {
-		return userHandler.GetUserHandler(c)
+	app.Post("store-first-login/user", func(c *fiber.Ctx) error {
+		return userHandler.InsertUserHandler(c)
+	})
+
+	app.Put("store-first-login/user/:username", func(c *fiber.Ctx) error {
+		return userHandler.UpdateUserHandler(c)
+	})
+
+	app.Delete("store-first-login/user/:username", func(c *fiber.Ctx) error {
+		return userHandler.DeleteUserHandler(c)
 	})
 
 	// Start the server
@@ -39,6 +49,7 @@ func main() {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
+
 func initConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -50,13 +61,4 @@ func initConfig() {
 	if err != nil {
 		panic(err)
 	}
-}
-func initMongo() *mongo.Database {
-	// Connect to MongoDB
-	db, err := infrastructure.ConnectMongoDB(viper.GetString("mongo.uri"), viper.GetString("mongo.database"))
-	if err != nil {
-		logs.Error("Connect Mongo Error!")
-	}
-	logs.Info("Connect Mongo Successfully!")
-	return db
 }

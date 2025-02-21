@@ -11,3 +11,4 @@ type ResponseData struct {
 	Message    string                   `bson:"message"`
 	Data       []map[string]interface{} `bson:"data"`
 }
+

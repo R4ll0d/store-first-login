@@ -1,8 +1,8 @@
 # Stage 1: Build Stage
-FROM golang:1.20-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # กำหนด working directory
-WORKDIR /app/store-first-login
+WORKDIR /app
 
 # คัดลอก go.mod และ go.sum
 COPY go.mod go.sum ./
@@ -19,14 +19,11 @@ RUN go build -ldflags "-X main.Buildtime=$(date +%FT%T%z)" -o store-first-login 
 # Stage 2: Run Stage
 FROM alpine:latest
 
-# ติดตั้ง dependencies 
-RUN go mod tidy
-
 # กำหนด working directory
-WORKDIR /app/store-first-login
+WORKDIR /app
 
 # คัดลอกไฟล์ที่ build จาก stage แรก
 COPY --from=builder /app/store-first-login .
 
 # รันแอปพลิเคชัน
-CMD ["./myapp"]
+CMD ["./store-first-login"]

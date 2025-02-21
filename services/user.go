@@ -1,5 +1,9 @@
 package services
 
+import "store-first-login/models"
+
 type UserService interface {
-	GetUsers() ([]map[string]interface{}, error)
+	InsertUser(models.UserRegister) error
+	UpdateUser(string, models.UserUpdate) error
+	DeleteUser(string) error
 }
