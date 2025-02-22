@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
+	"os"
 
 	"store-first-login/handlers"
 	"store-first-login/infrastructure"
@@ -12,7 +12,7 @@ import (
 	"store-first-login/services"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
 func init() {
@@ -21,6 +21,10 @@ func init() {
 }
 
 func main() {
+	port := os.Getenv("APP_PORT") // Cloud Run ใช้ตัวแปร PORT
+	if port == "" {
+		port = "8080" // ตั้งค่าเริ่มต้นเป็น 8080
+	}
 	db := infrastructure.InitMongo()
 	// Initialize repositories, use cases, and handlers
 	userRepo := repositories.NewUserRepositoryDB(db)
@@ -44,21 +48,15 @@ func main() {
 	})
 
 	// Start the server
-	logs.Info(fmt.Sprintf("Server is running on port : %d", viper.GetInt("app.port")))
-	if err := app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port"))); err != nil {
+	logs.Info(fmt.Sprintf("Server is running on port: %s", port))
+	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }
 
 func initConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
-	err := viper.ReadInConfig()
+	err := godotenv.Load("config.env")
 	if err != nil {
-		panic(err)
+		log.Fatal("Error loading .env file")
 	}
 }

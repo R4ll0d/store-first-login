@@ -76,7 +76,7 @@ func (h *userHandler) UpdateUserHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(models.ResponseJson{
 		StatusCode: strconv.Itoa(fiber.StatusCreated),
 		Status:     "success",
-		Message:    "User created successfully",
+		Message:    "User updated successfully",
 	})
 }
 func (h *userHandler) DeleteUserHandler(c *fiber.Ctx) error {

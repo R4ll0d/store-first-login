@@ -58,6 +58,7 @@ func (s userService) UpdateUser(username string, user models.UserUpdate) error {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
+	logs.Info(fmt.Sprintf("user %s Updated with details: %+v", username, user))
 	return nil
 }
 
@@ -68,5 +69,6 @@ func (s userService) DeleteUser(username string) error {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
+	logs.Info(fmt.Sprintf("user %s Deleted", username))
 	return nil
 }

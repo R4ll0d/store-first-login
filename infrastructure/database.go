@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"store-first-login/logs"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,7 +36,7 @@ func ConnectMongoDB(uri, dbName string) (*mongo.Database, error) {
 
 func InitMongo() *mongo.Database {
 	// Connect to MongoDB
-	db, err := ConnectMongoDB(viper.GetString("mongo.uri"), viper.GetString("mongo.database"))
+	db, err := ConnectMongoDB(os.Getenv("MONGO_URI"), os.Getenv("MONGO_DATABASE"))
 	if err != nil {
 		log.Fatal("Connect Mongo Error:", err)
 	}

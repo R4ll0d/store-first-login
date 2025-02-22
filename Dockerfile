@@ -14,7 +14,7 @@ RUN go mod tidy
 COPY . .
 
 # สร้างโปรแกรม
-RUN go build -ldflags "-X main.Buildtime=$(date +%FT%T%z)" -o store-first-login main.go
+RUN go build -o store-first-login main.go
 
 # Stage 2: Run Stage
 FROM alpine:latest
@@ -24,6 +24,9 @@ WORKDIR /app
 
 # คัดลอกไฟล์ที่ build จาก stage แรก
 COPY --from=builder /app/store-first-login .
+COPY --from=builder /app/config.env .
+# ระบุพอร์ตที่ต้องใช้
+EXPOSE 8000
 
 # รันแอปพลิเคชัน
 CMD ["./store-first-login"]
