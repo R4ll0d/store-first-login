@@ -21,7 +21,7 @@ func init() {
 }
 
 func main() {
-	port := os.Getenv("PORT") // Cloud Run ใช้ตัวแปร PORT
+	port := os.Getenv("APP_PORT") // Cloud Run ใช้ตัวแปร PORT
 	if port == "" {
 		port = "8080" // ตั้งค่าเริ่มต้นเป็น 8080
 	}
@@ -55,7 +55,8 @@ func main() {
 }
 
 func initConfig() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Warning: .env file not found, using environment variables")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
 }
