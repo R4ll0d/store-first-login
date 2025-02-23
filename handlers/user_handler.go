@@ -28,11 +28,18 @@ func (h *userHandler) InsertUserHandler(c *fiber.Ctx) error {
 
 	err := h.userSrv.InsertUser(user)
 	if err != nil {
-		if strings.Contains(err.Error(), "unexpected error") {
+		if strings.Contains(err.Error(), "Already Exits") {
 			return c.Status(fiber.StatusNotFound).JSON(models.ResponseJson{
 				StatusCode: strconv.Itoa(fiber.StatusNotFound),
 				Status:     "error",
 				Message:    "user already exits",
+			})
+		}
+		if strings.Contains(err.Error(), "Invalid ConfirmPassword") {
+			return c.Status(fiber.StatusNotFound).JSON(models.ResponseJson{
+				StatusCode: strconv.Itoa(fiber.StatusNotFound),
+				Status:     "error",
+				Message:    "password and confirm password do not match",
 			})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ResponseJson{
@@ -61,6 +68,13 @@ func (h *userHandler) UpdateUserHandler(c *fiber.Ctx) error {
 	err := h.userSrv.UpdateUser(username, user)
 	if err != nil {
 		if strings.Contains(err.Error(), "unexpected error") {
+			return c.Status(fiber.StatusNotFound).JSON(models.ResponseJson{
+				StatusCode: strconv.Itoa(fiber.StatusNotFound),
+				Status:     "error",
+				Message:    "unexpected error",
+			})
+		}
+		if strings.Contains(err.Error(), "User Not Found") {
 			return c.Status(fiber.StatusNotFound).JSON(models.ResponseJson{
 				StatusCode: strconv.Itoa(fiber.StatusNotFound),
 				Status:     "error",

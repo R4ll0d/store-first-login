@@ -19,7 +19,12 @@ func NewNotFoundError(message string) error {
 		Message: message,
 	}
 }
-
+func NewAlreadyExits(message string) error {
+	return AppError{
+		Code:    http.StatusBadRequest,
+		Message: message,
+	}
+}
 func NewUnexpectedError() error {
 	return AppError{
 		Code:    http.StatusInternalServerError,

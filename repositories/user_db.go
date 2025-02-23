@@ -46,16 +46,16 @@ func (u userRepositoryDB) GetAll() ([]map[string]interface{}, error) {
 }
 
 // Insert implements UserRepository.
-func (u userRepositoryDB) Insert(user models.UserRegister) error {
-	_, err := u.collection.InsertOne(context.Background(), user)
+func (u userRepositoryDB) Insert(user models.UserRegister) (interface{}, error) {
+	result, err := u.collection.InsertOne(context.Background(), user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return result.InsertedID, nil
 }
 
 // Update implements UserRepository.
-func (u userRepositoryDB) Update(username string, updatedUser models.UserUpdate) error {
+func (u userRepositoryDB) Update(username string, updatedUser models.UserUpdate) (*mongo.UpdateResult, error) {
 	// Create a filter to find the user by username
 	filter := bson.M{
 		"username":   username,
@@ -68,13 +68,9 @@ func (u userRepositoryDB) Update(username string, updatedUser models.UserUpdate)
 	// Perform the update operation
 	result, err := u.collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// Check if any documents were matched and modified
-	if result.MatchedCount == 0 {
-		return fmt.Errorf("no user found with username: %s", username)
-	}
-	return nil
+	return result, nil
 }
 
 // Delete implements UserRepository for soft delete.

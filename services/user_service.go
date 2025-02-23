@@ -21,18 +21,27 @@ func NewUserService(userRepo repositories.UserRepository) UserService {
 
 // InsertUser implements UserService.
 func (s userService) InsertUser(user models.UserRegister) error {
+	if user.Password != user.ConfirmPassword {
+		logs.Error("Invalid ConfirmPassword")
+		return errs.NewValidationError("Invalid ConfirmPassword")
+	}
 	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
-		return errs.NewUnexpectedError()
+		logs.Error("Invalid hashPassword")
+		return errs.NewValidationError("Invalid hashPassword")
 	}
 	user.Password = hashedPassword
 	user.CreateDate = time.Now().UTC().Local().Format("2006-01-02T15:04:05.999-0700")
-	err = s.userRepo.Insert(user)
+	insertedID, err := s.userRepo.Insert(user)
 	if err != nil {
-		logs.Error(err.Error())
+		if insertedID == nil {
+			logs.Error("Username Already Exits")
+			return errs.NewAlreadyExits("Already Exits")
+		}
+		logs.Error("Unexpected error")
 		return errs.NewUnexpectedError()
 	}
-	logs.Info(fmt.Sprintf("user %s Created", user.Username))
+	logs.Info(fmt.Sprintf("User %s Created", user.Username))
 	return nil
 }
 
@@ -49,16 +58,25 @@ func (s userService) UpdateUser(username string, user models.UserUpdate) error {
 	if user.Password != "" {
 		hashedPassword, err := hashPassword(user.Password)
 		if err != nil {
-			return errs.NewUnexpectedError()
+			logs.Error("Invalid hashPassword")
+			return errs.NewValidationError("Invalid hashPassword")
 		}
 		user.Password = hashedPassword
 	}
-	err := s.userRepo.Update(username, user)
+	result, err := s.userRepo.Update(username, user)
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
-	logs.Info(fmt.Sprintf("user %s Updated with details: %+v", username, user))
+	if result.MatchedCount == 0 {
+		logs.Error("User Not Found")
+		return errs.NewNotFoundError("User Not Found")
+	}
+	if result.ModifiedCount == 0 {
+		logs.Error(errs.NewUnexpectedError())
+		return errs.NewUnexpectedError()
+	}
+	logs.Info(fmt.Sprintf("User %s Updated with details: %+v", username, user))
 	return nil
 }
 
@@ -69,6 +87,6 @@ func (s userService) DeleteUser(username string) error {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
-	logs.Info(fmt.Sprintf("user %s Deleted", username))
+	logs.Info(fmt.Sprintf("User %s Deleted", username))
 	return nil
 }
