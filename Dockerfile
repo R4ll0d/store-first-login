@@ -24,9 +24,9 @@ WORKDIR /app
 
 # คัดลอกไฟล์ที่ build จาก stage แรก
 COPY --from=builder /app/store-first-login .
-COPY --from=builder /app/config.env .
+COPY --from=builder /app/.env .
 # ระบุพอร์ตที่ต้องใช้
-EXPOSE 8000
+EXPOSE 8080
 
 # รันแอปพลิเคชัน
 CMD ["./store-first-login"]
