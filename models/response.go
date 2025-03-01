@@ -13,8 +13,16 @@ type ResponseData struct {
 }
 
 type ResponseUser struct {
-	StatusCode string       `bson:"statusCode"`
-	Status     string       `bson:"status"`
-	Message    string       `bson:"message"`
+	StatusCode string     `bson:"statusCode"`
+	Status     string     `bson:"status"`
+	Message    string     `bson:"message"`
 	Data       UserDetail `bson:"data"`
+}
+type ResponseUserLogin struct {
+	StatusCode string `bson:"statusCode"`
+	Status     string `bson:"status"`
+	Message    string `bson:"message"`
+	Data       struct {
+		JwtToken string `bson:"jwt-token"`
+	} `bson:"data"`
 }

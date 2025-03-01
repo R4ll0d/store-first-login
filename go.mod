@@ -25,6 +25,7 @@ require (
 )
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/klauspost/compress v1.17.11 // indirect

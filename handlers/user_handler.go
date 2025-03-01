@@ -141,3 +141,31 @@ func (h *userHandler) GetUserHandler(c *fiber.Ctx) error {
 		Data:       result,
 	})
 }
+func (h *userHandler) LoginUserHandler(c *fiber.Ctx) error {
+	var user models.UserLogin
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ResponseJson{
+			StatusCode: strconv.Itoa(fiber.StatusBadRequest),
+			Status:     "error",
+			Message:    "Invalid request body",
+		})
+	}
+
+	jwtToken, err := h.userSrv.LoginUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ResponseJson{
+			StatusCode: strconv.Itoa(fiber.StatusInternalServerError),
+			Status:     "error",
+			Message:    "Failed to login",
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(models.ResponseUserLogin{
+		StatusCode: strconv.Itoa(fiber.StatusCreated),
+		Status:     "success",
+		Message:    "Login successfully",
+		Data: struct {
+			JwtToken string `bson:"jwt-token"`
+		}{JwtToken: jwtToken},
+	})
+}

@@ -3,13 +3,14 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"store-first-login/errs"
 	"store-first-login/logs"
 	"store-first-login/models"
 	"store-first-login/repositories"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type userService struct {
@@ -26,7 +27,7 @@ func (s userService) InsertUser(user models.UserRegister) error {
 		logs.Error("Invalid ConfirmPassword")
 		return errs.NewValidationError("Invalid ConfirmPassword")
 	}
-	hashedPassword, err := hashPassword(user.Password)
+	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
 		logs.Error("Invalid hashPassword")
 		return errs.NewValidationError("Invalid hashPassword")
@@ -46,18 +47,10 @@ func (s userService) InsertUser(user models.UserRegister) error {
 	return nil
 }
 
-func hashPassword(password string) (string, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashed), nil
-}
-
 // UpdateUser implements UserService.
 func (s userService) UpdateUser(username string, user models.UserUpdate) error {
 	if user.Password != "" {
-		hashedPassword, err := hashPassword(user.Password)
+		hashedPassword, err := HashPassword(user.Password)
 		if err != nil {
 			logs.Error("Invalid hashPassword")
 			return errs.NewValidationError("Invalid hashPassword")
@@ -116,4 +109,47 @@ func (s userService) GetUser(username string) (models.UserDetail, error) {
 	}
 	logs.Info(fmt.Sprintf("User %s Geted with details: %+v", username, userDetails))
 	return userDetails, nil
+}
+
+// LoginUser implements UserService.
+func (s userService) LoginUser(input models.UserLogin) (string, error) {
+	// ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+	user, err := s.userRepo.GetOne(input.Username)
+	if err != nil {
+		logs.Error("User not found: " + err.Error())
+		return "", fmt.Errorf("user not found")
+	}
+	// แปลง map[string]interface{} เป็น JSON
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		logs.Error(err.Error())
+		return "", fmt.Errorf("failed to marshal result: %v", err)
+	}
+
+	// แปลง JSON เป็น models.UserDetail
+	var userDetails models.UserRegister
+	if err := json.Unmarshal(jsonData, &userDetails); err != nil {
+		logs.Error(err.Error())
+		return "", fmt.Errorf("failed to unmarshal to models.UserDetail: %v", err)
+	}
+
+	// ตรวจสอบรหัสผ่าน
+	if !CheckPasswordHash(input.Password, userDetails.Password) {
+		logs.Error("Invalid password for user: " + input.Username)
+		return "", fmt.Errorf("invalid password")
+	}
+
+	// สร้าง JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userDetails.Username,
+		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	if err != nil {
+		logs.Error("Failed to sign JWT token: " + err.Error())
+		return "", fmt.Errorf("failed to create token")
+	}
+	logs.Info(fmt.Sprintf("User %s Login successfully", userDetails.Username))
+	return tokenString, nil // ล็อกอินสำเร็จ
 }

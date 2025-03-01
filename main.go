@@ -51,6 +51,9 @@ func main() {
 		return userHandler.GetUserHandler(c)
 	})
 
+	app.Post("store-first-login/login/user", func(c *fiber.Ctx) error {
+		return userHandler.LoginUserHandler(c)
+	})
 	// Start the server
 	logs.Info(fmt.Sprintf("Server is running on port: %s", port))
 	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {
