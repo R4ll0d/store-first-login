@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"store-first-login/errs"
 	"store-first-login/logs"
@@ -89,4 +90,30 @@ func (s userService) DeleteUser(username string) error {
 	}
 	logs.Info(fmt.Sprintf("User %s Deleted", username))
 	return nil
+}
+
+// GetUser implements UserService.
+func (s userService) GetUser(username string) (models.UserDetail, error) {
+	// result เป็น map[string]interface{}
+	result, err := s.userRepo.GetOne(username)
+	if err != nil {
+		logs.Error(err.Error())
+		return models.UserDetail{}, err // คืนค่า struct เปล่าแทน nil
+	}
+
+	// แปลง map[string]interface{} เป็น JSON
+	jsonData, err := json.Marshal(result)
+	if err != nil {
+		logs.Error(err.Error())
+		return models.UserDetail{}, fmt.Errorf("failed to marshal result: %v", err)
+	}
+
+	// แปลง JSON เป็น models.UserDetail
+	var userDetails models.UserDetail
+	if err := json.Unmarshal(jsonData, &userDetails); err != nil {
+		logs.Error(err.Error())
+		return models.UserDetail{}, fmt.Errorf("failed to unmarshal to models.UserDetail: %v", err)
+	}
+	logs.Info(fmt.Sprintf("User %s Geted with details: %+v", username, userDetails))
+	return userDetails, nil
 }

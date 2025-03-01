@@ -12,3 +12,9 @@ type ResponseData struct {
 	Data       []map[string]interface{} `bson:"data"`
 }
 
+type ResponseUser struct {
+	StatusCode string       `bson:"statusCode"`
+	Status     string       `bson:"status"`
+	Message    string       `bson:"message"`
+	Data       UserDetail `bson:"data"`
+}

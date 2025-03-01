@@ -21,7 +21,7 @@ func NewUserRepositoryDB(db *mongo.Database) UserRepository {
 // GetOne implements UserRepository.
 func (u userRepositoryDB) GetOne(username string) (map[string]interface{}, error) {
 	var user map[string]interface{}
-	err := u.collection.FindOne(context.Background(), bson.M{"Username": username}).Decode(&user)
+	err := u.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, fmt.Errorf("no user found with username: %s", username)

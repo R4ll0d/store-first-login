@@ -10,6 +10,12 @@ type UserRegister struct {
 	DeleteDate      string `bson:"deleteDate"`
 }
 
+type UserDetail struct {
+	Username        string `bson:"username"`
+	Email           string `bson:"email"`
+	Role            string `bson:"role"`
+}
+
 type UserUpdate struct {
 	Password string `bson:"password"`
 	Email    string `bson:"email"`

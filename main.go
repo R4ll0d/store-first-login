@@ -21,7 +21,7 @@ func init() {
 }
 
 func main() {
-	port := os.Getenv("APP_PORT") // Cloud Run ใช้ตัวแปร PORT
+	port := os.Getenv("PORT") // Cloud Run ใช้ตัวแปร PORT
 	if port == "" {
 		port = "8080" // ตั้งค่าเริ่มต้นเป็น 8080
 	}
@@ -35,16 +35,20 @@ func main() {
 	app := fiber.New()
 
 	// Define routes
-	app.Post("store-first-login/user", func(c *fiber.Ctx) error {
+	app.Post("store-first-login/register/user", func(c *fiber.Ctx) error {
 		return userHandler.InsertUserHandler(c)
 	})
 
-	app.Put("store-first-login/user/:username", func(c *fiber.Ctx) error {
+	app.Put("store-first-login/update/user/:username", func(c *fiber.Ctx) error {
 		return userHandler.UpdateUserHandler(c)
 	})
 
-	app.Delete("store-first-login/user/:username", func(c *fiber.Ctx) error {
+	app.Delete("store-first-login/delete/user/:username", func(c *fiber.Ctx) error {
 		return userHandler.DeleteUserHandler(c)
+	})
+
+	app.Get("store-first-login/get/user/:username", func(c *fiber.Ctx) error {
+		return userHandler.GetUserHandler(c)
 	})
 
 	// Start the server
@@ -55,8 +59,5 @@ func main() {
 }
 
 func initConfig() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load()
 }

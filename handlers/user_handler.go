@@ -116,3 +116,28 @@ func (h *userHandler) DeleteUserHandler(c *fiber.Ctx) error {
 		Message:    "User deleted successfully",
 	})
 }
+
+func (h *userHandler) GetUserHandler(c *fiber.Ctx) error {
+	username := c.Params("username")
+	result, err := h.userSrv.GetUser(username)
+	if err != nil {
+		if strings.Contains(err.Error(), "unexpected error") {
+			return c.Status(fiber.StatusNotFound).JSON(models.ResponseJson{
+				StatusCode: strconv.Itoa(fiber.StatusNotFound),
+				Status:     "error",
+				Message:    "user not found",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ResponseJson{
+			StatusCode: strconv.Itoa(fiber.StatusInternalServerError),
+			Status:     "error",
+			Message:    "Failed to find user",
+		})
+	}
+	return c.Status(fiber.StatusCreated).JSON(models.ResponseUser{
+		StatusCode: strconv.Itoa(fiber.StatusCreated),
+		Status:     "success",
+		Message:    "User geted successfully",
+		Data:       result,
+	})
+}

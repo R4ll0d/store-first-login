@@ -8,4 +8,5 @@ type UserService interface {
 	InsertUser(models.UserRegister) error
 	UpdateUser(string, models.UserUpdate) error
 	DeleteUser(string) error
+	GetUser(username string) (models.UserDetail, error)
 }
