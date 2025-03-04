@@ -10,4 +10,5 @@ type UserService interface {
 	DeleteUser(string) error
 	GetUser(username string) (models.UserDetail, error)
 	LoginUser(input models.UserLogin) (string, error)
+	SendOTP(user models.UserRegister) error
 }

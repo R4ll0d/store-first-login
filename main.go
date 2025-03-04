@@ -35,25 +35,35 @@ func main() {
 	app := fiber.New()
 
 	// Define routes
-	app.Post("store-first-login/register/user", func(c *fiber.Ctx) error {
-		return userHandler.InsertUserHandler(c)
-	})
 
-	app.Put("store-first-login/update/user/:username", func(c *fiber.Ctx) error {
+	app.Put("store-first-login/updateUser/:username", func(c *fiber.Ctx) error {
 		return userHandler.UpdateUserHandler(c)
 	})
 
-	app.Delete("store-first-login/delete/user/:username", func(c *fiber.Ctx) error {
+	app.Delete("store-first-login/deleteUser/:username", func(c *fiber.Ctx) error {
 		return userHandler.DeleteUserHandler(c)
 	})
 
-	app.Get("store-first-login/get/user/:username", func(c *fiber.Ctx) error {
+	app.Get("store-first-login/getUser/:username", func(c *fiber.Ctx) error {
 		return userHandler.GetUserHandler(c)
 	})
 
-	app.Post("store-first-login/login/user", func(c *fiber.Ctx) error {
+	app.Post("store-first-login/register", func(c *fiber.Ctx) error {
+		return userHandler.InsertUserHandler(c)
+	})
+
+	app.Post("store-first-login/login", func(c *fiber.Ctx) error {
 		return userHandler.LoginUserHandler(c)
 	})
+
+	app.Post("store-first-login/sendOTP", func(c *fiber.Ctx) error {
+		return userHandler.SendOTPHandler(c)
+	})
+
+	// app.Post("store-first-login/validateOTP", func(c *fiber.Ctx) error {
+	// 	return userHandler.ValidateOTPHandler(c)
+	// })
+
 	// Start the server
 	logs.Info(fmt.Sprintf("Server is running on port: %s", port))
 	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {

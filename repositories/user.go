@@ -12,4 +12,5 @@ type UserRepository interface {
 	Insert(models.UserRegister) (interface{}, error)
 	Update(string, models.UserUpdate) (*mongo.UpdateResult, error)
 	Delete(string) error
+	GetByFilter(string,string,string,string) ([]map[string]interface{}, error)
 }

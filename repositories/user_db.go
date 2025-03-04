@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"store-first-login/models"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type userRepositoryDB struct {
@@ -98,4 +100,84 @@ func (u userRepositoryDB) Delete(username string) error {
 		return fmt.Errorf("no user found with username: %s", username)
 	}
 	return nil
+}
+
+func (u userRepositoryDB) GetByFilter(dbName string, collection string, filter string, field string) ([]map[string]interface{}, error) {
+	// Parse the filter and field into BSON format
+	filterBson, err := parseFilterStringToBson(filter)
+	if err != nil {
+		filterBson = bson.M{}
+	}
+
+	fieldBson, err := parseFieldStringToBson(field)
+	if err != nil {
+		fieldBson = bson.M{}
+	}
+
+	// Define options for Find based on projection
+	findOptions := options.Find().SetProjection(fieldBson)
+
+	// Perform the query with appropriate filter and projection
+	cursor, err := u.collection.Find(context.Background(), filterBson, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background()) // Ensure the cursor is closed after use
+
+	// Collect results
+	var results []map[string]interface{}
+	for cursor.Next(context.Background()) {
+		var doc map[string]interface{}
+		if err := cursor.Decode(&doc); err != nil {
+			return nil, fmt.Errorf("error decoding document: %v", err)
+		}
+		results = append(results, doc)
+	}
+
+	// Check for errors encountered during cursor iteration
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	// Return results
+	if len(results) == 0 {
+		return nil, fmt.Errorf("mongo: no documents in result")
+	}
+	return results, nil
+}
+
+func parseFilterStringToBson(filterString string) (bson.M, error) {
+	filterBson := bson.M{}
+	// Removing parentheses and splitting by comma
+	parts := strings.Split(strings.Trim(filterString, "()"), ",")
+
+	for _, part := range parts {
+		keyValue := strings.Split(part, "=")
+		if len(keyValue) != 2 {
+			return nil, fmt.Errorf("invalid key-value pair: %s", part)
+		}
+
+		key := strings.TrimSpace(keyValue[0])
+		value := strings.TrimSpace(keyValue[1])
+
+		// Creating BSON document
+		filterBson[key] = value
+	}
+	return filterBson, nil
+}
+
+func parseFieldStringToBson(fieldString string) (bson.M, error) {
+	fieldBson := bson.M{}
+
+	// Removing parentheses and splitting by comma
+	parts := strings.Split(strings.Trim(fieldString, "()"), ",")
+
+	for _, part := range parts {
+		key := strings.TrimSpace(part)
+		if key == "" {
+			return nil, fmt.Errorf("invalid key-value pair: %s", part)
+		}
+		fieldBson[key] = 1
+	}
+	return fieldBson, nil
 }
