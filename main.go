@@ -72,5 +72,5 @@ func main() {
 }
 
 func initConfig() {
-	_ = godotenv.Load()
+	_ = godotenv.Load("./bin/.env")
 }
